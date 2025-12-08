@@ -21,7 +21,7 @@ public class ServisController {
         this.stm = db.stm;
     }
 
-      //Method 1: Membuat model atau desain tabel virtual
+    //Method 1: Membuat model atau desain tabel virtual
     public DefaultTableModel createTable() {
         this.dtm.addColumn("ID Servis");
         this.dtm.addColumn("Nama Pelanggan");
@@ -61,7 +61,7 @@ public class ServisController {
             this.dtm.fireTableDataChanged();
 
             // Filter hanya yang belum selesai
-            this.sql = "SELECT * FROM tb_servis WHERE status != 'Selesai"; 
+            this.sql = "SELECT * FROM tb_servis WHERE status != 'Selesai";
             this.res = this.stm.executeQuery(sql);
 
             while (res.next()) {
@@ -86,11 +86,11 @@ public class ServisController {
         srv.setNama_pelanggan(nama);
         srv.setNama_barangservis(barang);
         srv.setServis(keluhan);
-        srv.setStatus("Menunggu"); 
+        srv.setStatus("Menunggu");
 
         try {
-            this.sql = "INSERT INTO tb_servis (id_servis, nama_pelanggan, nama_barangservis, servis, status) VALUES " + "('" + srv.getId_servis() + "', '" + srv.getNama_pelanggan() + "', '" 
-                     + srv.getNama_barangservis() + "', '" + srv.getServis() + "', '" + srv.getStatus() + "')";
+            this.sql = "INSERT INTO tb_servis (id_servis, nama_pelanggan, nama_barangservis, servis, status) VALUES " + "('" + srv.getId_servis() + "', '" + srv.getNama_pelanggan() + "', '"
+                    + srv.getNama_barangservis() + "', '" + srv.getServis() + "', '" + srv.getStatus() + "')";
             this.stm.executeUpdate(sql);
             return true;
         } catch (Exception e) {
@@ -98,12 +98,21 @@ public class ServisController {
             return false;
         }
     }
+// Method 4: UPDATE STATUS (Fitur Mekanik)
 
-    // Method 4: UPDATE STATUS (Fitur Mekanik)
-    // Mekanik cuma perlu update status (misal jadi 'Proses' atau 'Selesai')
     public boolean updateStatus(String id, String statusBaru) {
+        // 1. Panggil Model
+        Servis srv = new Servis();
+
+        // 2. Set data ke dalam Model
+        srv.setId_servis(id);
+        srv.setStatus(statusBaru);
+
         try {
-            this.sql = "UPDATE tb_servis SET status='" + statusBaru + "' WHERE id_servis='" + id + "'";
+            // 3. Ambil data dari Model pakai GET
+            this.sql = "UPDATE tb_servis SET status='" + srv.getStatus() + "' "
+                    + "WHERE id_servis='" + srv.getId_servis() + "'";
+
             this.stm.executeUpdate(sql);
             return true;
         } catch (Exception e) {
@@ -111,12 +120,25 @@ public class ServisController {
             return false;
         }
     }
-    
+
     // Method 5: UPDATE LENGKAP (Fitur Admin/Kasir jika ada salah ketik)
     public boolean ubahServis(String id, String nama, String barang, String keluhan, String status) {
+        // 1. Panggil Model
+        Servis srv = new Servis();
+
+        // 2. Set semua data ke Model
+        srv.setId_servis(id);
+        srv.setNama_pelanggan(nama);
+        srv.setNama_barangservis(barang);
+        srv.setServis(keluhan);
+        srv.setStatus(status);
+
         try {
-            this.sql = "UPDATE tb_servis SET nama_pelanggan='" + nama + "', " + "nama_barangservis='" + barang + "', "+ "servis='" + keluhan + "', "+ "status='" + status + "' "
-                     + "WHERE id_servis='" + id + "'";
+            // 3. Susun Query pakai GET dari Model
+            this.sql = "UPDATE tb_servis SET "
+                    + "nama_pelanggan='" + srv.getNama_pelanggan() + "', " + "nama_barangservis='" + srv.getNama_barangservis() + "', " + "servis='" + srv.getServis() + "', " + "status='" + srv.getStatus() + "' "
+                    + "WHERE id_servis='" + srv.getId_servis() + "'";
+
             this.stm.executeUpdate(sql);
             return true;
         } catch (Exception e) {
@@ -127,8 +149,15 @@ public class ServisController {
 
     // Method 6: HAPUS SERVIS (Jika batal)
     public boolean hapusServis(String id) {
+        // 1. Panggil Model
+        Servis srv = new Servis();
+
+        // 2. Set ID ke Model
+        srv.setId_servis(id);
+
         try {
-            this.sql = "DELETE FROM tb_servis WHERE id_servis='" + id + "'";
+            // 3. Hapus berdasarkan ID dari Model
+            this.sql = "DELETE FROM tb_servis WHERE id_servis='" + srv.getId_servis() + "'";
             this.stm.executeUpdate(sql);
             return true;
         } catch (Exception e) {
