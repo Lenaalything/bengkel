@@ -8,6 +8,15 @@ public class Pegawai {
     private String email;
     private String status;
     private String password;
+    private String role;
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 
     // Constructor Kosong
     public Pegawai() {
