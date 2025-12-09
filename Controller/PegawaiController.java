@@ -11,24 +11,11 @@ public class PegawaiController {
     public ResultSet res;
     public String sql;
 
-    //model tabel/bentuk virtual sebelum di apply di view
-    DefaultTableModel dtm = new DefaultTableModel();
-
     //konstruktor
     public PegawaiController() {
         Koneksi db = new Koneksi();
         db.config();
         this.stm = db.stm;
-    }
-
-    // buat struktur table virtual
-    public DefaultTableModel createTable() {
-        this.dtm.addColumn("ID");
-        this.dtm.addColumn("Nama");
-        this.dtm.addColumn("No.Telp");
-        this.dtm.addColumn("Email");
-        this.dtm.addColumn("Status");
-        return this.dtm;
     }
 
     //cek login
@@ -62,72 +49,91 @@ public class PegawaiController {
     }
 
     // tampilkan semua pegawai
-    public void tampilkanPegawai() {
-        try {
-            this.dtm.getDataVector().removeAllElements();
-            this.dtm.fireTableDataChanged();
+    public DefaultTableModel tampilkanPegawai() {
+        DefaultTableModel dtm = new DefaultTableModel();
+        dtm.addColumn("ID Pegawai");
+        dtm.addColumn("Nama");
+        dtm.addColumn("No Telp");
+        dtm.addColumn("Email");
+        dtm.addColumn("Status");
 
-            this.sql = "SELECT * FROM tb_pegawai";
-            this.res = this.stm.executeQuery(sql);
+        try {
+            sql = "SELECT * FROM tb_pegawai";
+            res = stm.executeQuery(sql);
 
             while (res.next()) {
-                Object[] obj = new Object[5];
-                obj[0] = res.getString("id_pegawai");
-                obj[1] = res.getString("nama");
-                obj[2] = res.getString("no_telp");
-                obj[3] = res.getString("email");
-                obj[4] = res.getString("status");
-                this.dtm.addRow(obj);
+                dtm.addRow(new Object[]{
+                    res.getString("id_pegawai"),
+                    res.getString("nama"),
+                    res.getString("no_telp"),
+                    res.getString("email"),
+                    res.getString("status")
+                });
             }
+
         } catch (Exception e) {
-            System.out.println("Gagal query tampilkanPegawai: " + e.getMessage());
+            System.out.println("Gagal tampilkanPegawai: " + e.getMessage());
         }
+
+        return dtm;
     }
 
     // tampilkan data pegawai berdasarkan nama (dipakai untuk tampilkan data yang login)
-    public void tampilkanPegawaiByName(String nama) {
-        try {
-            this.dtm.getDataVector().removeAllElements();
-            this.dtm.fireTableDataChanged();
+    public DefaultTableModel tampilkanPegawaiByName(String nama) {
+        DefaultTableModel dtm = new DefaultTableModel();
+        dtm.addColumn("ID Pegawai");
+        dtm.addColumn("Nama");
+        dtm.addColumn("No Telp");
+        dtm.addColumn("Email");
+        dtm.addColumn("Status");
 
-            this.sql = "SELECT * FROM tb_pegawai WHERE nama = '" + nama + "'";
-            this.res = this.stm.executeQuery(sql);
+        try {
+            sql = "SELECT * FROM tb_pegawai WHERE nama='" + nama + "'";
+            res = stm.executeQuery(sql);
 
             while (res.next()) {
-                Object[] obj = new Object[5];
-                obj[0] = res.getString("id_pegawai");
-                obj[1] = res.getString("nama");
-                obj[2] = res.getString("no_telp");
-                obj[3] = res.getString("email");
-                obj[4] = res.getString("status");
-                this.dtm.addRow(obj);
+                dtm.addRow(new Object[]{
+                    res.getString("id_pegawai"),
+                    res.getString("nama"),
+                    res.getString("no_telp"),
+                    res.getString("email"),
+                    res.getString("status")
+                });
             }
+
         } catch (Exception e) {
-            System.out.println("Gagal query tampilkanPegawaiByName: " + e.getMessage());
+            System.out.println("Gagal tampilkanPegawaiByName: " + e.getMessage());
         }
+        return dtm;
     }
 
     // tampilkan data pegawai berdasarkan id_pegawai
-    public void tampilkanPegawaiById(String id) {
-        try {
-            this.dtm.getDataVector().removeAllElements();
-            this.dtm.fireTableDataChanged();
+    public DefaultTableModel tampilkanPegawaiById(String id) {
+        DefaultTableModel dtm = new DefaultTableModel();
+        dtm.addColumn("ID Pegawai");
+        dtm.addColumn("Nama");
+        dtm.addColumn("No Telp");
+        dtm.addColumn("Email");
+        dtm.addColumn("Status");
 
-            this.sql = "SELECT * FROM tb_pegawai WHERE id_pegawai = '" + id + "'";
-            this.res = this.stm.executeQuery(sql);
+        try {
+            sql = "SELECT * FROM tb_pegawai WHERE id_pegawai='" + id + "'";
+            res = stm.executeQuery(sql);
 
             while (res.next()) {
-                Object[] obj = new Object[5];
-                obj[0] = res.getString("id_pegawai");
-                obj[1] = res.getString("nama");
-                obj[2] = res.getString("no_telp");
-                obj[3] = res.getString("email");
-                obj[4] = res.getString("status");
-                this.dtm.addRow(obj);
+                dtm.addRow(new Object[]{
+                    res.getString("id_pegawai"),
+                    res.getString("nama"),
+                    res.getString("no_telp"),
+                    res.getString("email"),
+                    res.getString("status")
+                });
             }
+
         } catch (Exception e) {
-            System.out.println("Gagal query tampilkanPegawaiById: " + e.getMessage());
+            System.out.println("Gagal tampilkanPegawaiById: " + e.getMessage());
         }
+        return dtm;
     }
 
     // update data pegawai hanya untuk akun yang login (no hp, email, password)
