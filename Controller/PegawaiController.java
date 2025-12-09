@@ -3,8 +3,6 @@ package Controller;
 import Model.Pegawai;
 import java.sql.Statement;
 import java.sql.ResultSet;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.table.DefaultTableModel;
 
 public class PegawaiController {
@@ -13,16 +11,27 @@ public class PegawaiController {
     public ResultSet res;
     public String sql;
 
+    //model tabel/bentuk virtual sebelum di apply di view
+    DefaultTableModel dtm = new DefaultTableModel();
+
     //konstruktor
     public PegawaiController() {
-        //objek koneksi
         Koneksi db = new Koneksi();
         db.config();
         this.stm = db.stm;
     }
 
-    //method cekLogin(select)
-    /*
+    // buat struktur table virtual
+    public DefaultTableModel createTable() {
+        this.dtm.addColumn("ID");
+        this.dtm.addColumn("Nama");
+        this.dtm.addColumn("No.Telp");
+        this.dtm.addColumn("Email");
+        this.dtm.addColumn("Status");
+        return this.dtm;
+    }
+
+    //cek login
     public boolean cekLogin(String un, String pw) {
         //dipetakan dengan model
         Pegawai pgw = new Pegawai();
@@ -31,14 +40,12 @@ public class PegawaiController {
         boolean status = false;
 
         //query ke database + cek
-
         try {
             //sql query
             this.sql = "SELECT * FROM tb_pegawai WHERE nama = '" + pgw.getNama() + "'AND password = '" + pgw.getPassword() + "'";
 
             //menjalankan query
             //khusus select gunakan 'executeQuery'
-
             this.res = this.stm.executeQuery(sql);
 
             //pengecekan
@@ -53,173 +60,14 @@ public class PegawaiController {
         return status;
 
     }
-     */
-// Pake map biar bisa login 2 versi
-    public Map<String, String> cekLogin(String un, String pw) {
-        Map<String, String> loginData = null;
-        this.res = null;
 
+    // tampilkan semua pegawai
+    public void tampilkanPegawai() {
         try {
-            // 1  LOGIN  ADMIN 
-            this.sql = "SELECT id_admin AS id, nama FROM tb_admin WHERE nama = '" + un + "' AND password = '" + pw + "'";
-            this.res = this.stm.executeQuery(sql);
-            if (this.res.next()) {
-                loginData = new HashMap<>();
-                loginData.put("id", res.getString("id"));
-                loginData.put("nama", res.getString("nama"));
-                loginData.put("role", "Admin");
-                return loginData;
-            }
+            this.dtm.getDataVector().removeAllElements();
+            this.dtm.fireTableDataChanged();
 
-            //  2 LOGIN PEGAWAI 
-            this.sql = "SELECT id_pegawai AS id, nama FROM tb_kasir WHERE nama = '" + un + "' AND password = '" + pw + "'";
-            this.res = this.stm.executeQuery(sql);
-            if (this.res.next()) {
-                loginData = new HashMap<>();
-                loginData.put("id", res.getString("id"));
-                loginData.put("nama", res.getString("nama"));
-                loginData.put("role", "Kasir");
-                return loginData;
-            }
-
-            // Cek tb_mekanik
-            this.sql = "SELECT id_pegawai AS id, nama FROM tb_mekanik WHERE nama = '" + un + "' AND password = '" + pw + "'";
-            this.res = this.stm.executeQuery(sql);
-            if (this.res.next()) {
-                loginData = new HashMap<>();
-                loginData.put("id", res.getString("id"));
-                loginData.put("nama", res.getString("nama"));
-                loginData.put("role", "Mekanik");
-                return loginData;
-            }
-        } catch (Exception e) {
-            System.out.println("Query Login Gagal: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    //gaji semua
-    public DefaultTableModel tampilkanGajiSemua() {
-        DefaultTableModel dtmSemua = new DefaultTableModel();
-
-        dtmSemua.addColumn("ID Karyawan");
-        dtmSemua.addColumn("Nama");
-        dtmSemua.addColumn("Gaji ");
-        dtmSemua.addColumn("Status");
-
-        try {
-            // Hubungkan tb_pegawai dan tb_gaji
-            this.sql = "SELECT p.id_pegawai, p.nama, g.gaji, g.status_pengambilan_gaji"
-                    + " FROM tb_pegawai p "
-                    + "LEFT JOIN tb_gaji g ON p.id_pegawai = g.id_karyawan "
-                    + "ORDER BY p.id_pegawai ASC";
-
-            this.res = this.stm.executeQuery(sql);
-
-            while (res.next()) {
-                Object[] obj = new Object[4];
-                obj[0] = res.getString("id_pegawai");
-                obj[1] = res.getString("nama");
-                obj[2] = res.getString("gaji");
-                obj[3] = res.getString("status_pengambilan_gaji");
-
-                dtmSemua.addRow(obj);
-            }
-            return dtmSemua; 
-
-        } catch (Exception e) {
-            System.out.println("Gagal query tampilkanGajiSemua: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    //tampilkan gaji ptibadi
-    public DefaultTableModel tampilkanGajiPribadi(String idPegawai) {
-        DefaultTableModel dtmPribadi = new DefaultTableModel();
-
-
-        dtmPribadi.addColumn("ID Karyawan");
-        dtmPribadi.addColumn("Nama");
-        dtmPribadi.addColumn("Gaji ");
-        dtmPribadi.addColumn("Status");
-
-        try {
-            this.sql = "SELECT p.id_pegawai, p.nama, g.gaji, g.status_pengambilan_gaji"
-                    + " FROM tb_pegawai p "
-                    + "LEFT JOIN tb_gaji g ON p.id_pegawai = g.id_karyawan "
-                    + "WHERE p.id_pegawai = '" + idPegawai + "' "
-                    + "ORDER BY p.id_pegawai ASC";
-
-            this.res = this.stm.executeQuery(sql);
-
-            while (res.next()) {
-                Object[] obj = new Object[4];
-                obj[0] = res.getString("id_pegawai");
-                obj[1] = res.getString("nama");
-                obj[2] = res.getString("gaji");
-                obj[3] = res.getString("status_pengambilan_gaji");
-
-                dtmPribadi.addRow(obj);
-            }
-            return dtmPribadi;
-
-        } catch (Exception e) {
-            System.out.println("Gagal query tampilkanGajiPribadi: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
-    //method  ambil gaji: 
-    //klarifikasi dulu cui, gak kusambungin ke model, karena setelah klik tombol ambil gaji, gajinya langsung 0 bukan sesuai inputan user.
-
-    public boolean ambilGaji(String idPegawai) {
-        try {
-            this.sql = "UPDATE tb_gaji SET status_pengambilan_gaji = 'SUDAH DIAMBIL', gaji = 0 WHERE id_karyawan = '" + idPegawai + "' AND status_pengambilan_gaji = 'BELUM DIAMBIL'";
-            this.stm.executeUpdate(sql);
-            // int rowsAffected = this.stm.executeUpdate(sql);
-            //  return rowsAffected >0;
-            return true;
-        } catch (Exception e) {
-            System.out.println("guerry gagal: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    //method  update 
-    public boolean ubahData(String idPegawai, String noBaru, String emailBaru) {
-        //hubungkan ke model
-        Pegawai pgw = new Pegawai();
-        pgw.setId_pegawai(idPegawai);
-        pgw.setNo_telp(noBaru);
-        pgw.setEmail(emailBaru);
-
-        try {
-            this.sql = "UPDATE tb_pegawai SET no_telp ='" + pgw.getNo_telp() + "', email =  '" + pgw.getEmail() + "' WHERE id_pegawai = '" + pgw.getId_pegawai() + "'";
-            this.stm.executeUpdate(sql);
-            // int rowsAffected = this.stm.executeUpdate(sql);
-            //  return rowsAffected >0;
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public DefaultTableModel tampilkanSemuaPegawai() {
-        DefaultTableModel dtmPegawai = new DefaultTableModel();
-
-        dtmPegawai.addColumn("ID Pegawai");
-        dtmPegawai.addColumn("Nama");
-        dtmPegawai.addColumn("No. Telp");
-        dtmPegawai.addColumn("Email");
-        dtmPegawai.addColumn("Status");
-
-        try {
-            this.sql = "SELECT id_pegawai, nama, no_telp, email, status FROM tb_pegawai ORDER BY id_pegawai ASC";
-
+            this.sql = "SELECT * FROM tb_pegawai";
             this.res = this.stm.executeQuery(sql);
 
             while (res.next()) {
@@ -229,33 +77,181 @@ public class PegawaiController {
                 obj[2] = res.getString("no_telp");
                 obj[3] = res.getString("email");
                 obj[4] = res.getString("status");
-
-                dtmPegawai.addRow(obj);
+                this.dtm.addRow(obj);
             }
-            return dtmPegawai;
-
         } catch (Exception e) {
-            System.out.println("querry gagal: " + e.getMessage());
+            System.out.println("Gagal query tampilkanPegawai: " + e.getMessage());
+        }
+    }
+
+    // tampilkan data pegawai berdasarkan nama (dipakai untuk tampilkan data yang login)
+    public void tampilkanPegawaiByName(String nama) {
+        try {
+            this.dtm.getDataVector().removeAllElements();
+            this.dtm.fireTableDataChanged();
+
+            this.sql = "SELECT * FROM tb_pegawai WHERE nama = '" + nama + "'";
+            this.res = this.stm.executeQuery(sql);
+
+            while (res.next()) {
+                Object[] obj = new Object[5];
+                obj[0] = res.getString("id_pegawai");
+                obj[1] = res.getString("nama");
+                obj[2] = res.getString("no_telp");
+                obj[3] = res.getString("email");
+                obj[4] = res.getString("status");
+                this.dtm.addRow(obj);
+            }
+        } catch (Exception e) {
+            System.out.println("Gagal query tampilkanPegawaiByName: " + e.getMessage());
+        }
+    }
+
+    // tampilkan data pegawai berdasarkan id_pegawai
+    public void tampilkanPegawaiById(String id) {
+        try {
+            this.dtm.getDataVector().removeAllElements();
+            this.dtm.fireTableDataChanged();
+
+            this.sql = "SELECT * FROM tb_pegawai WHERE id_pegawai = '" + id + "'";
+            this.res = this.stm.executeQuery(sql);
+
+            while (res.next()) {
+                Object[] obj = new Object[5];
+                obj[0] = res.getString("id_pegawai");
+                obj[1] = res.getString("nama");
+                obj[2] = res.getString("no_telp");
+                obj[3] = res.getString("email");
+                obj[4] = res.getString("status");
+                this.dtm.addRow(obj);
+            }
+        } catch (Exception e) {
+            System.out.println("Gagal query tampilkanPegawaiById: " + e.getMessage());
+        }
+    }
+
+    // update data pegawai hanya untuk akun yang login (no hp, email, password)
+    public boolean updatePegawaiLogin(String id, String noTelp, String email, String password) {
+        try {
+            this.sql = "UPDATE tb_pegawai SET no_telp='" + noTelp + "', email='" + email + "', password='" + password + "' WHERE id_pegawai='" + id + "'";
+            this.stm.executeUpdate(sql);
+            return true;
+        } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return false;
         }
     }
-    public Pegawai getPegawaiDataPribadi(String idPegawai) {
-    Pegawai pegawai = null;
-    try {
-        this.sql = "SELECT id_pegawai, no_telp, email FROM tb_pegawai WHERE id_pegawai = '" + idPegawai + "'";
-        this.res = this.stm.executeQuery(sql);
 
-        if (this.res.next()) {
-            pegawai = new Pegawai();
-            pegawai.setId_pegawai(this.res.getString("id_pegawai"));
-            pegawai.setNo_telp(this.res.getString("no_telp"));
-            pegawai.setEmail(this.res.getString("email"));
+    // ambil gaji: menandai gaji telah diambil dan set gaji menjadi 0 untuk baris yang belum diambil
+    public boolean ambilGaji(String idKaryawan) {
+        try {
+            this.sql = "UPDATE tb_gaji SET gaji=0, status_pengambilan_gaji=1 WHERE id_karyawan='" + idKaryawan + "' AND status_pengambilan_gaji=0";
+            this.stm.executeUpdate(sql);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
-    } catch (Exception e) {
-        System.out.println("Gagal: " + e.getMessage());
     }
-    return pegawai;
-}
 
+    // dapatkan jumlah gaji saat ini (belum diambil) untuk karyawan
+    public double getGaji(String idKaryawan) {
+        double gaji = 0.0;
+        try {
+            this.sql = "SELECT gaji FROM tb_gaji WHERE id_karyawan='" + idKaryawan + "' AND status_pengambilan_gaji=0 ORDER BY id_gaji DESC LIMIT 1";
+            this.res = this.stm.executeQuery(sql);
+            if (res.next()) {
+                gaji = res.getDouble("gaji");
+            }
+        } catch (Exception e) {
+            System.out.println("Gagal getGaji: " + e.getMessage());
+        }
+        return gaji;
+    }
+
+    // helper: buat role identifier sederhana dari id dan nama, e.g. K001 + Deni -> k_deni
+    public String getRoleFromId(String idPegawai, String nama) {
+        if (idPegawai == null || nama == null) {
+            return "";
+        }
+        String prefix = idPegawai.length() > 0 ? idPegawai.substring(0, 1).toUpperCase() : "";
+        String lname = nama.trim().toLowerCase().replaceAll("\\s+", "_");
+        if (prefix.equals("K")) {
+            return "k_" + lname;
+        }
+        if (prefix.equals("M")) {
+            return "m_" + lname;
+        }
+        return "user_" + lname;
+    }
+
+    // tambah pegawai (biasanya oleh admin)
+    public boolean tambahPegawai(String id, String nama, String noTelp, String email, String status) {
+        Pegawai pg = new Pegawai();
+        pg.setId_pegawai(id);
+        pg.setNama(nama);
+        pg.setNo_telp(noTelp);
+        pg.setEmail(email);
+        pg.setStatus(status);
+
+        try {
+            this.sql = "INSERT INTO tb_pegawai(id_pegawai,nama,no_telp,email,status) VALUES ('" + pg.getId_pegawai() + "','" + pg.getNama() + "','" + pg.getNo_telp() + "','" + pg.getEmail() + "','" + pg.getStatus() + "')";
+            this.stm.executeUpdate(sql);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // ubah data pegawai
+    public boolean ubahPegawai(String id, String nama, String noTelp, String email, String status) {
+        Pegawai pg = new Pegawai();
+        pg.setId_pegawai(id);
+        pg.setNama(nama);
+        pg.setNo_telp(noTelp);
+        pg.setEmail(email);
+        pg.setStatus(status);
+
+        try {
+            this.sql = "UPDATE tb_pegawai SET nama='" + pg.getNama() + "', no_telp='" + pg.getNo_telp() + "', email='" + pg.getEmail() + "', status='" + pg.getStatus() + "' WHERE id_pegawai='" + pg.getId_pegawai() + "'";
+            this.stm.executeUpdate(sql);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // hapus pegawai berdasarkan id
+    public boolean hapusPegawai(String id) {
+        Pegawai pg = new Pegawai();
+        pg.setId_pegawai(id);
+        try {
+            this.sql = "DELETE FROM tb_pegawai WHERE id_pegawai='" + pg.getId_pegawai() + "'";
+            this.stm.executeUpdate(sql);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // method cekLogin untuk pegawai (menggunakan id_pegawai dan password)
+//    public boolean cekLogin(String id, String pw) {
+//        Pegawai pgw = new Pegawai();
+//        pgw.setId_pegawai(id);
+//        pgw.setPassword(pw);
+//        boolean status = false;
+//
+//        try {
+//            this.sql = "SELECT * FROM tb_pegawai WHERE id_pegawai = '" + pgw.getId_pegawai() + "' AND password = '" + pgw.getPassword() + "'";
+//            this.res = this.stm.executeQuery(sql);
+//            if (res.next()) status = true;
+//            else status = false;
+//        } catch (Exception e) {
+//            System.out.println("Query cekLogin gagal: " + e.getMessage());
+//        }
+//        return status;
+//    }
 }
